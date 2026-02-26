@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { ChannelType } from "discord.js";
 import { ToolContext, ToolResponse } from "./types.js";
-import { 
-  CreateTextChannelSchema, 
-  DeleteChannelSchema, 
+import {
+  CreateTextChannelSchema,
+  DeleteChannelSchema,
   ReadMessagesSchema,
   CreateCategorySchema,
   EditCategorySchema,
@@ -11,7 +11,7 @@ import {
 } from "../schemas.js";
 import { handleDiscordError } from "../errorHandler.js";
 
-  // Category creation handler
+// Category creation handler
 export async function createCategoryHandler(
   args: unknown,
   context: ToolContext
@@ -105,9 +105,9 @@ export async function deleteCategoryHandler(
   }
 }
 
-  // Text channel creation handler
+// Text channel creation handler
 export async function createTextChannelHandler(
-  args: unknown, 
+  args: unknown,
   context: ToolContext
 ): Promise<ToolResponse> {
   const { guildId, channelName, topic, reason } = CreateTextChannelSchema.parse(args);
@@ -137,9 +137,9 @@ export async function createTextChannelHandler(
     const channel = await guild.channels.create(channelOptions);
 
     return {
-      content: [{ 
-        type: "text", 
-        text: `Successfully created text channel "${channelName}" with ID: ${channel.id}` 
+      content: [{
+        type: "text",
+        text: `Successfully created text channel "${channelName}" with ID: ${channel.id}`
       }]
     };
   } catch (error) {
@@ -149,7 +149,7 @@ export async function createTextChannelHandler(
 
 // Channel deletion handler
 export async function deleteChannelHandler(
-  args: unknown, 
+  args: unknown,
   context: ToolContext
 ): Promise<ToolResponse> {
   const { channelId, reason } = DeleteChannelSchema.parse(args);
@@ -181,9 +181,9 @@ export async function deleteChannelHandler(
     await channel.delete(reason || "Channel deleted via API");
 
     return {
-      content: [{ 
-        type: "text", 
-        text: `Successfully deleted channel with ID: ${channelId}` 
+      content: [{
+        type: "text",
+        text: `Successfully deleted channel with ID: ${channelId}`
       }]
     };
   } catch (error) {
@@ -193,7 +193,7 @@ export async function deleteChannelHandler(
 
 // Message reading handler
 export async function readMessagesHandler(
-  args: unknown, 
+  args: unknown,
   context: ToolContext
 ): Promise<ToolResponse> {
   const { channelId, limit } = ReadMessagesSchema.parse(args);
@@ -223,7 +223,7 @@ export async function readMessagesHandler(
 
     // Fetch messages
     const messages = await channel.messages.fetch({ limit });
-    
+
     if (messages.size === 0) {
       return {
         content: [{ type: "text", text: `No messages found in channel` }]
@@ -240,19 +240,25 @@ export async function readMessagesHandler(
         bot: msg.author.bot
       },
       timestamp: msg.createdAt,
-      attachments: msg.attachments.size,
+      attachments: msg.attachments.map(a => ({
+        id: a.id,
+        filename: a.name,
+        url: a.url,
+        contentType: a.contentType,
+        size: a.size,
+      })),
       embeds: msg.embeds.length,
       replyTo: msg.reference ? msg.reference.messageId : null
     })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
     return {
-      content: [{ 
-        type: "text", 
+      content: [{
+        type: "text",
         text: JSON.stringify({
           channelId,
           messageCount: formattedMessages.length,
           messages: formattedMessages
-        }, null, 2) 
+        }, null, 2)
       }]
     };
   } catch (error) {
