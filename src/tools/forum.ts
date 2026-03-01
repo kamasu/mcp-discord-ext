@@ -1,5 +1,5 @@
 import { ChannelType, ForumChannel } from 'discord.js';
-import { GetForumChannelsSchema, CreateForumPostSchema, GetForumPostSchema, ListForumThreadsSchema, ReplyToForumSchema, DeleteForumPostSchema, EditForumPostSchema } from '../schemas.js';
+import { GetForumChannelsSchema, CreateForumPostSchema, GetForumPostSchema, ListForumThreadsSchema, ReplyToForumSchema, DeleteForumPostSchema, EditForumPostSchema, SetThreadArchivedSchema } from '../schemas.js';
 import { ToolHandler } from './types.js';
 import { handleDiscordError } from "../errorHandler.js";
 
@@ -342,4 +342,36 @@ export const editForumPostHandler: ToolHandler = async (args, { client }) => {
   } catch (error) {
     return handleDiscordError(error);
   }
-}; 
+};
+
+export const setThreadArchivedHandler: ToolHandler = async (args, { client }) => {
+  const { threadId, archived } = SetThreadArchivedSchema.parse(args);
+
+  try {
+    if (!client.isReady()) {
+      return {
+        content: [{ type: "text", text: "Discord client not logged in." }],
+        isError: true
+      };
+    }
+
+    const thread = await client.channels.fetch(threadId);
+    if (!thread || !thread.isThread()) {
+      return {
+        content: [{ type: "text", text: `Cannot find forum post/thread with ID: ${threadId}` }],
+        isError: true
+      };
+    }
+
+    await thread.setArchived(archived);
+
+    return {
+      content: [{
+        type: "text",
+        text: `Successfully ${archived ? 'archived' : 'unarchived'} thread "${thread.name}" (ID: ${threadId})`
+      }]
+    };
+  } catch (error) {
+    return handleDiscordError(error);
+  }
+};

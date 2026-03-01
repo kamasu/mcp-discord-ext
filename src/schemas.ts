@@ -106,6 +106,11 @@ export const EditForumPostSchema = z.object({
     name: z.string()
 });
 
+export const SetThreadArchivedSchema = z.object({
+    threadId: z.string(),
+    archived: z.boolean()
+});
+
 export const DeleteMessageSchema = z.object({
     channelId: z.string(),
     messageId: z.string(),

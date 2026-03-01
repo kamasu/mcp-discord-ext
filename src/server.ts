@@ -17,6 +17,7 @@ import {
   replyToForumHandler,
   deleteForumPostHandler,
   editForumPostHandler,
+  setThreadArchivedHandler,
   createTextChannelHandler,
   deleteChannelHandler,
   readMessagesHandler,
@@ -130,6 +131,11 @@ export class DiscordMCPServer {
           case "discord_edit_forum_post":
             this.logClientState("before discord_edit_forum_post handler");
             toolResponse = await editForumPostHandler(args, this.toolContext);
+            return toolResponse;
+
+          case "discord_set_thread_archived":
+            this.logClientState("before discord_set_thread_archived handler");
+            toolResponse = await setThreadArchivedHandler(args, this.toolContext);
             return toolResponse;
 
           case "discord_create_text_channel":

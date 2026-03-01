@@ -115,6 +115,18 @@ export const toolList = [
     }
   },
   {
+    name: "discord_set_thread_archived",
+    description: "Sets the archived state of a forum post or thread",
+    inputSchema: {
+      type: "object",
+      properties: {
+        threadId: { type: "string" },
+        archived: { type: "boolean" }
+      },
+      required: ["threadId", "archived"]
+    }
+  },
+  {
     name: "discord_list_forum_threads",
     description: "Lists all threads (posts) in a Discord forum channel, including both active and archived threads",
     inputSchema: {
