@@ -16,6 +16,7 @@ import {
   listForumThreadsHandler,
   replyToForumHandler,
   deleteForumPostHandler,
+  editForumPostHandler,
   createTextChannelHandler,
   deleteChannelHandler,
   readMessagesHandler,
@@ -43,7 +44,7 @@ export class DiscordMCPServer {
   private clientStatusInterval: NodeJS.Timeout | null = null;
 
   constructor(
-    private client: Client, 
+    private client: Client,
     private transport: MCPTransport
   ) {
     this.server = new Server(
@@ -124,6 +125,11 @@ export class DiscordMCPServer {
           case "discord_delete_forum_post":
             this.logClientState("before discord_delete_forum_post handler");
             toolResponse = await deleteForumPostHandler(args, this.toolContext);
+            return toolResponse;
+
+          case "discord_edit_forum_post":
+            this.logClientState("before discord_edit_forum_post handler");
+            toolResponse = await editForumPostHandler(args, this.toolContext);
             return toolResponse;
 
           case "discord_create_text_channel":
@@ -236,12 +242,12 @@ export class DiscordMCPServer {
     // Add client to server context so transport can access it
     (this.server as any)._context = { client: this.client };
     (this.server as any).client = this.client;
-    
+
     // Setup periodic client state logging
     this.clientStatusInterval = setInterval(() => {
       this.logClientState("periodic check");
     }, 10000);
-    
+
     await this.transport.start(this.server);
   }
 
@@ -251,7 +257,7 @@ export class DiscordMCPServer {
       clearInterval(this.clientStatusInterval);
       this.clientStatusInterval = null;
     }
-    
+
     await this.transport.stop();
   }
 } 

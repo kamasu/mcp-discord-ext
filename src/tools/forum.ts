@@ -1,11 +1,11 @@
 import { ChannelType, ForumChannel } from 'discord.js';
-import { GetForumChannelsSchema, CreateForumPostSchema, GetForumPostSchema, ListForumThreadsSchema, ReplyToForumSchema, DeleteForumPostSchema } from '../schemas.js';
+import { GetForumChannelsSchema, CreateForumPostSchema, GetForumPostSchema, ListForumThreadsSchema, ReplyToForumSchema, DeleteForumPostSchema, EditForumPostSchema } from '../schemas.js';
 import { ToolHandler } from './types.js';
 import { handleDiscordError } from "../errorHandler.js";
 
 export const getForumChannelsHandler: ToolHandler = async (args, { client }) => {
   const { guildId } = GetForumChannelsSchema.parse(args);
-  
+
   try {
     if (!client.isReady()) {
       return {
@@ -24,10 +24,10 @@ export const getForumChannelsHandler: ToolHandler = async (args, { client }) => 
 
     // Fetch all channels from the guild
     const channels = await guild.channels.fetch();
-    
+
     // Filter to get only forum channels
     const forumChannels = channels.filter(channel => channel?.type === ChannelType.GuildForum);
-    
+
     if (forumChannels.size === 0) {
       return {
         content: [{ type: "text", text: `No forum channels found in guild: ${guild.name}` }]
@@ -51,7 +51,7 @@ export const getForumChannelsHandler: ToolHandler = async (args, { client }) => 
 
 export const createForumPostHandler: ToolHandler = async (args, { client }) => {
   const { forumChannelId, title, content, tags } = CreateForumPostSchema.parse(args);
-  
+
   try {
     if (!client.isReady()) {
       return {
@@ -69,11 +69,11 @@ export const createForumPostHandler: ToolHandler = async (args, { client }) => {
     }
 
     const forumChannel = channel as ForumChannel;
-    
+
     // Get available tags in the forum
     const availableTags = forumChannel.availableTags;
     let selectedTagIds: string[] = [];
-    
+
     // If tags are provided, find their IDs
     if (tags && tags.length > 0) {
       selectedTagIds = availableTags
@@ -91,9 +91,9 @@ export const createForumPostHandler: ToolHandler = async (args, { client }) => {
     });
 
     return {
-      content: [{ 
-        type: "text", 
-        text: `Successfully created forum post "${title}" with ID: ${thread.id}` 
+      content: [{
+        type: "text",
+        text: `Successfully created forum post "${title}" with ID: ${thread.id}`
       }]
     };
   } catch (error) {
@@ -103,7 +103,7 @@ export const createForumPostHandler: ToolHandler = async (args, { client }) => {
 
 export const getForumPostHandler: ToolHandler = async (args, { client }) => {
   const { threadId } = GetForumPostSchema.parse(args);
-  
+
   try {
     if (!client.isReady()) {
       return {
@@ -122,7 +122,7 @@ export const getForumPostHandler: ToolHandler = async (args, { client }) => {
 
     // Get messages from the thread
     const messages = await thread.messages.fetch({ limit: 10 });
-    
+
     const threadDetails = {
       id: thread.id,
       name: thread.name,
@@ -240,7 +240,7 @@ export const listForumThreadsHandler: ToolHandler = async (args, { client }) => 
 
 export const replyToForumHandler: ToolHandler = async (args, { client }) => {
   const { threadId, message } = ReplyToForumSchema.parse(args);
-  
+
   try {
     if (!client.isReady()) {
       return {
@@ -268,9 +268,9 @@ export const replyToForumHandler: ToolHandler = async (args, { client }) => {
     const sentMessage = await thread.send(message);
 
     return {
-      content: [{ 
-        type: "text", 
-        text: `Successfully replied to forum post. Message ID: ${sentMessage.id}` 
+      content: [{
+        type: "text",
+        text: `Successfully replied to forum post. Message ID: ${sentMessage.id}`
       }]
     };
   } catch (error) {
@@ -280,7 +280,7 @@ export const replyToForumHandler: ToolHandler = async (args, { client }) => {
 
 export const deleteForumPostHandler: ToolHandler = async (args, { client }) => {
   const { threadId, reason } = DeleteForumPostSchema.parse(args);
-  
+
   try {
     if (!client.isReady()) {
       return {
@@ -301,9 +301,42 @@ export const deleteForumPostHandler: ToolHandler = async (args, { client }) => {
     await thread.delete(reason || "Forum post deleted via API");
 
     return {
-      content: [{ 
-        type: "text", 
-        text: `Successfully deleted forum post/thread with ID: ${threadId}` 
+      content: [{
+        type: "text",
+        text: `Successfully deleted forum post/thread with ID: ${threadId}`
+      }]
+    };
+  } catch (error) {
+    return handleDiscordError(error);
+  }
+};
+
+export const editForumPostHandler: ToolHandler = async (args, { client }) => {
+  const { threadId, name } = EditForumPostSchema.parse(args);
+
+  try {
+    if (!client.isReady()) {
+      return {
+        content: [{ type: "text", text: "Discord client not logged in." }],
+        isError: true
+      };
+    }
+
+    const thread = await client.channels.fetch(threadId);
+    if (!thread || !thread.isThread()) {
+      return {
+        content: [{ type: "text", text: `Cannot find forum post/thread with ID: ${threadId}` }],
+        isError: true
+      };
+    }
+
+    const oldName = thread.name;
+    await thread.setName(name);
+
+    return {
+      content: [{
+        type: "text",
+        text: `Successfully renamed thread from "${oldName}" to "${name}" (ID: ${threadId})`
       }]
     };
   } catch (error) {

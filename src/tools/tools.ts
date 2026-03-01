@@ -9,7 +9,8 @@ import {
   getForumPostHandler,
   listForumThreadsHandler,
   replyToForumHandler,
-  deleteForumPostHandler
+  deleteForumPostHandler,
+  editForumPostHandler
 } from './forum.js';
 import {
   createTextChannelHandler,
@@ -19,8 +20,8 @@ import {
   editCategoryHandler,
   deleteCategoryHandler
 } from './channel.js';
-import { 
-  getServerInfoHandler, 
+import {
+  getServerInfoHandler,
   listServersHandler,
   searchMessagesHandler
 } from "./server.js";
@@ -47,6 +48,7 @@ export {
   listForumThreadsHandler,
   replyToForumHandler,
   deleteForumPostHandler,
+  editForumPostHandler,
   createTextChannelHandler,
   deleteChannelHandler,
   readMessagesHandler,

@@ -103,6 +103,18 @@ export const toolList = [
     }
   },
   {
+    name: "discord_edit_forum_post",
+    description: "Edits a forum post or thread name (title)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        threadId: { type: "string" },
+        name: { type: "string" }
+      },
+      required: ["threadId", "name"]
+    }
+  },
+  {
     name: "discord_list_forum_threads",
     description: "Lists all threads (posts) in a Discord forum channel, including both active and archived threads",
     inputSchema: {
