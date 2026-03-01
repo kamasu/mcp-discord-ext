@@ -71,11 +71,17 @@ if (config.DISCORD_TOKEN) {
 // Auto-login on startup if token is available
 const autoLogin = async () => {
     const token = config.DISCORD_TOKEN;
+    info(`[diag] autoLogin called. token present: ${!!token}, token length: ${token ? token.length : 0}, token prefix: ${token ? token.substring(0, 10) + '...' : 'N/A'}`);
     if (token) {
         try {
+            const loginStart = Date.now();
+            info(`[diag] client.login() starting...`);
             await client.login(token);
+            const loginDuration = Date.now() - loginStart;
+            info(`[diag] client.login() resolved in ${loginDuration}ms. isReady: ${client.isReady()}, user: ${client.user?.tag ?? 'null'}`);
             info('Successfully logged in to Discord');
         } catch (err: any) {
+            info(`[diag] client.login() threw error: ${String(err)}`);
             if (typeof err.message === 'string' && err.message.includes('Privileged intent provided is not enabled or whitelisted')) {
                 error('Login failed: One or more privileged intents are not enabled in the Discord Developer Portal. Please enable the required intents.');
             } else {
@@ -83,6 +89,7 @@ const autoLogin = async () => {
             }
         }
     } else {
+        info("[diag] No token found. process.env.DISCORD_TOKEN: " + (process.env.DISCORD_TOKEN ? 'SET (length=' + process.env.DISCORD_TOKEN.length + ')' : 'UNSET'));
         info("No Discord token found in config, skipping auto-login");
     }
 };
@@ -112,27 +119,27 @@ const mcpServer = new DiscordMCPServer(client, transport);
 try {
     await mcpServer.start();
     info('MCP server started successfully');
-    
+
     // Keep the Node.js process running
     if (config.TRANSPORT.toLowerCase() === 'http') {
         // Send a heartbeat every 30 seconds to keep the process alive
         setInterval(() => {
             info('MCP server is running');
         }, 30000);
-        
+
         // Handle termination signals
         process.on('SIGINT', async () => {
             info('Received SIGINT. Shutting down server...');
             await mcpServer.stop();
             process.exit(0);
         });
-        
+
         process.on('SIGTERM', async () => {
             info('Received SIGTERM. Shutting down server...');
             await mcpServer.stop();
             process.exit(0);
         });
-        
+
         info('Server running in keep-alive mode. Press Ctrl+C to stop.');
     }
 } catch (err) {
