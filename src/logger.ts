@@ -7,7 +7,7 @@ export function log(message: string, level: 'info' | 'error' = 'info') {
             message
         }
     };
-    process.stdout.write(JSON.stringify(logMessage) + '\n');
+    process.stderr.write(JSON.stringify(logMessage) + '\n');
 }
 
 export function info(message: string) {
