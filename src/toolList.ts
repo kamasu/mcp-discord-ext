@@ -52,15 +52,29 @@ export const toolList = [
   },
   {
     name: "discord_send",
-    description: "Sends a message to a specified Discord text channel. Optionally reply to another message by providing its message ID.",
+    description: "Sends a message to a specified Discord text channel. Supports file attachments via file path, URL, or base64 data. Optionally reply to another message by providing its message ID.",
     inputSchema: {
       type: "object",
       properties: {
         channelId: { type: "string" },
-        message: { type: "string" },
-        replyToMessageId: { type: "string" }
+        message: { type: "string", description: "Text message content. Optional if files are provided." },
+        replyToMessageId: { type: "string" },
+        files: {
+          type: "array",
+          description: "Files to attach to the message. Each file specifies a source type and value.",
+          items: {
+            type: "object",
+            properties: {
+              source: { type: "string", enum: ["path", "url", "base64"], description: "How to resolve the file: 'path' for local file path, 'url' for HTTP(S) URL, 'base64' for base64-encoded data" },
+              value: { type: "string", description: "The file path, URL, or base64-encoded data depending on source type" },
+              name: { type: "string", description: "Filename for the attachment (required for base64, optional for path/url)" },
+              description: { type: "string", description: "Alt text / description for the attachment" }
+            },
+            required: ["source", "value"]
+          }
+        }
       },
-      required: ["channelId", "message"]
+      required: ["channelId"]
     }
   },
   {

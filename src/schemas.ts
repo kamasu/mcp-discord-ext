@@ -4,10 +4,18 @@ export const DiscordLoginSchema = z.object({
     token: z.string().optional()
 });
 
+export const FileAttachmentSchema = z.object({
+    source: z.enum(["path", "url", "base64"]),
+    value: z.string(),
+    name: z.string().optional(),
+    description: z.string().optional()
+});
+
 export const SendMessageSchema = z.object({
     channelId: z.string(),
-    message: z.string(),
-    replyToMessageId: z.string().optional()
+    message: z.string().optional(),
+    replyToMessageId: z.string().optional(),
+    files: z.array(FileAttachmentSchema).optional()
 });
 
 export const GetForumChannelsSchema = z.object({
